@@ -73,9 +73,15 @@ button:focus-visible {
 .saved-entity {
   cursor: pointer;
   color: #1100ff;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.saved-entity div {
   transition: opacity ease-out 0.2s;
 }
 
-.saved-entity:hover {
+.saved-entity div:hover {
   opacity: 0.5;
 }

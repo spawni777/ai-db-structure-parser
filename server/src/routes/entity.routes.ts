@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { getEntities, saveEntities } from '@/controllers/entity.controller';
+import { deleteEntity, getEntities, saveEntities } from '@/controllers/entity.controller';
 
 const router = Router();
 
 router.get('/', getEntities);
-router.post('/save', saveEntities);
+router.post('/', saveEntities);
+router.delete('/:name', deleteEntity);
 
 export default router;

@@ -112,3 +112,31 @@ export const getEntities = async (req: Request, res: Response): Promise<void> =>
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const deleteEntity = async (req: Request, res: Response): Promise<void> => {
+    const { name } = req.params;
+  
+    if (!name) {
+      res.status(400).json({ error: 'Entity name is required.' });
+      return;
+    }
+  
+    try {
+      const filePath = path.join(ENTITY_FILES_DIR, `${name}.json`);
+  
+      // Check if the file exists
+      try {
+        await fs.access(filePath);  // Check if the file exists
+      } catch (err) {
+        res.status(404).json({ error: `Entity with name "${name}" not found.` });
+        return;
+      }
+  
+      // Delete the file
+      await fs.unlink(filePath);
+      res.status(200).json({ message: `Entity "${name}" deleted successfully.` });
+    } catch (error) {
+      console.error('Error deleting entity:', error);
+      res.status(500).json({ error: 'Failed to delete the entity.' });
+    }
+  };

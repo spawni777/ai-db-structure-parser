@@ -56,7 +56,7 @@ const App = () => {
   const handleSaveEntities = async () => {
     try {
       const parsedStructure = JSON.parse(entities);  // Parse the JSON before sending
-      await axios.post(`${apiUrl}/entities/save`, parsedStructure);
+      await axios.post(`${apiUrl}/entities/`, parsedStructure);
       alert('Response saved successfully!');
 
       getSavedEntities();
@@ -70,6 +70,13 @@ const App = () => {
     setEntities(JSON.stringify({
       tables: [savedEntities[index]],
     }, null, 2))
+  }
+
+  const deleteSavedEntity = async (entityTableName: string) => {
+    await axios.delete(`${apiUrl}/entities/${entityTableName}`);
+    alert(`Entity "${entityTableName}" was deleted successfully!`);
+
+    getSavedEntities();
   }
 
   useEffect(() => {
@@ -116,7 +123,7 @@ const App = () => {
         </div>
       </div>
 
-      <button onClick={handleSaveEntities} style={{ marginBottom: '1rem' }}>Save Entity</button>
+      <button onClick={handleSaveEntities} style={{ marginBottom: '1rem' }}>Save Entities</button>
       {!!savedEntities.length && (
         <>
           <hr />
@@ -125,10 +132,11 @@ const App = () => {
             {savedEntities.map((entity, index) => (
               <div
                 className='saved-entity'
-                key={entity.table_name}
+                key={`${entity.table_name}-${index}`}
                 onClick={() => showSavedEntity(index)}
               >
-                {entity.table_name}
+                <div style={{marginRight: '1rem'}}>{entity.table_name}</div>
+                <button onClick={() => deleteSavedEntity(entity.table_name)}>Delete</button>
               </div>
             ))}
           </div>
