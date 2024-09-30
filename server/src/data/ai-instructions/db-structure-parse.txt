@@ -1,0 +1,55 @@
+You are given an SQL query in the format of a SELECT statement. Analyze the query and return the database schema, including table names, column names with data types, and relationships between tables (if any). If the schema cannot be determined from the given query, return null. Response only with JSON without any markdown. No other words needed.   
+
+Response format:
+{
+    "tables": [
+        {
+            "table_name": "Table name",
+            "columns": [
+                {
+                    "column_name": "Column name",
+                    "data_type": "Data type"
+                },
+                ...
+            ],
+            "relationships": [
+                {
+                    "related_table": "Related table",
+                    "relationship_type": "Relationship type (e.g., one-to-many, many-to-many)"
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+}
+
+Example query: SELECT users.name, orders.id FROM users JOIN orders ON users.id = orders.user_id;
+
+Example response:
+{
+    "tables": [
+        {
+            "table_name": "users",
+            "columns": [
+                {"column_name": "id", "data_type": "int"},
+                {"column_name": "name", "data_type": "varchar"}
+            ],
+            "relationships": [
+                {"related_table": "orders", "relationship_type": "one-to-many"}
+            ]
+        },
+        {
+            "table_name": "orders",
+            "columns": [
+                {"column_name": "id", "data_type": "int"},
+                {"column_name": "user_id", "data_type": "int"}
+            ],
+            "relationships": [
+                {"related_table": "users", "relationship_type": "many-to-one"}
+            ]
+        }
+    ]
+}
+
+If the database schema cannot be determined, return: null.
