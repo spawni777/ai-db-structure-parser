@@ -23,6 +23,10 @@ textarea {
   resize: none;
 }
 
+#root {
+  min-height: 100vh;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -70,18 +74,55 @@ button:focus-visible {
   }
 }
 
-.saved-entity {
+
+.saved, .parsed {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.saved__monaco, .parsed__monaco {
+  flex: 1 1 calc(60% - 2rem);
+}
+
+.saved__entities, .parsed__entities {
+  box-sizing: border-box;
+  padding: 0.5rem;
+  background-color: #fff;
+  max-height: 100%;
+  flex: 1 1 calc(40% - 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  overflow: auto;
+  height: 400px;
+  max-height: 400px;
+  align-items: flex-start;
+  align-content: start;
+}
+
+.saved__item, .parsed__item {
   cursor: pointer;
-  color: #1100ff;
+  color: #91ff00;
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
+  padding: 0.7rem;
+  background-color: rgb(77, 77, 77);
+  border-radius: 10px;
+  flex: 1 1 100%;
+  justify-content: space-between;
 }
 
-.saved-entity div {
+.saved__item div,
+.parsed__item div
+ {
   transition: opacity ease-out 0.2s;
 }
 
-.saved-entity div:hover {
+.saved__item div:hover,
+.parsed__item div:hover {
   opacity: 0.5;
 }

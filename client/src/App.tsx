@@ -16,9 +16,9 @@ type Entity = {
 
 const App = () => {
   const [savedEntities, setSavedEntities] = useState<Entity[]>([]);
-  
   const [userInput, setUserInput] = useState('');
   const [parsedEntities, setParsedEntities] = useState('');
+  const [parsedEntitiesData, setParsedEntitiesData] = useState<Entity[]>([]);
   const [loadedEntities, setLoadedEntities] = useState('');
   const [gptLoading, setGptLoading] = useState(false);
 
@@ -41,11 +41,14 @@ const App = () => {
       return;
     }
 
+    setParsedEntities('');
     setGptLoading(true);
     try {
       const response = await axios.post(`${apiUrl}/gpt/parse-entity`, {
         prompt: userInput,
       });
+
+      setParsedEntitiesData(response.data?.tables ?? []);
       setParsedEntities(JSON.stringify(response.data, null, 2));  // Format JSON response
     } catch (error) {
       console.error('Error calling GPT API:', error);
@@ -66,6 +69,12 @@ const App = () => {
       alert('Failed to save the response.');
     }
   };
+
+  const showParsedEntity = (index: number) => {
+    setParsedEntities(JSON.stringify({
+      tables: [parsedEntitiesData[index]],
+    }, null, 2))
+  }
 
   const showSavedEntity = (index: number) => {
     setLoadedEntities(JSON.stringify({
@@ -92,30 +101,10 @@ const App = () => {
         <label>Enter your SQL query:</label>
         <div style={{ marginTop: '0.5rem' }}>
           <Monaco
-              height="400px"  // Adjust height based on your needs
-              language="sql"  // Set language to JSON for IntelliSense
-              value={userInput}  // The JSON data to edit
-              onChange={(newValue) => setUserInput(newValue || '')}  // Update state on change
-              options={{
-                minimap: { enabled: false },  // Disable minimap
-                automaticLayout: true,  // Auto adjust layout
-              }}
-            />
-        </div>
-      </div>
-
-      <button onClick={handleSendToGpt} style={{ marginBottom: '1rem' }} disabled={gptLoading}>
-        {gptLoading ? 'Loading...' : 'Send to GPT'}
-      </button>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <label>Parsed Entities</label>
-        <div style={{ marginTop: '0.5rem' }}>
-          <Monaco
             height="400px"  // Adjust height based on your needs
-            language="json"  // Set language to JSON for IntelliSense
-            value={parsedEntities}  // The JSON data to edit
-            onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
+            language="sql"  // Set language to JSON for IntelliSense
+            value={userInput}  // The JSON data to edit
+            onChange={(newValue) => setUserInput(newValue || '')}  // Update state on change
             options={{
               minimap: { enabled: false },  // Disable minimap
               automaticLayout: true,  // Auto adjust layout
@@ -124,49 +113,89 @@ const App = () => {
         </div>
       </div>
 
-      <button onClick={() => handleSaveEntities(parsedEntities)} style={{ marginBottom: '1rem' }}>Save Entities</button>
+      <button onClick={handleSendToGpt} style={{ marginBottom: '1rem' }} disabled={gptLoading}>
+        {gptLoading ? 'Loading...' : 'Send to GPT'}
+      </button>
+      
+      {!!parsedEntities.length && (
+        <>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Parsed Entities</label>
+
+            <div className='parsed' style={{ marginTop: '0.5rem' }}>
+              <div className='parsed__monaco'>
+                <Monaco
+                  height="400px"  // Adjust height based on your needs
+                  language="json"  // Set language to JSON for IntelliSense
+                  value={parsedEntities}  // The JSON data to edit
+                  onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
+                  options={{
+                    minimap: { enabled: false },  // Disable minimap
+                    automaticLayout: true,  // Auto adjust layout
+                  }}
+                />
+              </div>
+              
+              <div className='parsed__entities'>
+                {parsedEntitiesData.map((entity, index) => (
+                  <div
+                    className='parsed__item'
+                    key={`${entity.table_name}-${index}-parsed`}
+                    onClick={() => showParsedEntity(index)}
+                  >
+                    <div>{entity.table_name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <button onClick={() => handleSaveEntities(parsedEntities)} style={{ marginBottom: '1rem' }}>Save Entities</button>
+        </>
+      )}
 
       {!!savedEntities.length && (
         <>
           <hr />
           <h2>Saved Entities</h2>
 
+          <div className='saved'>
+            <div className='saved__monaco'>
+              <Monaco
+                height="400px"  // Adjust height based on your needs
+                language="json"  // Set language to JSON for IntelliSense
+                value={loadedEntities}  // The JSON data to edit
+                onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
+                options={{
+                  minimap: { enabled: false },  // Disable minimap
+                  automaticLayout: true,  // Auto adjust layout
+                }}
+              />
+
+              <button onClick={() => handleSaveEntities(loadedEntities)} style={{ marginBottom: '1rem', marginTop: '1rem' }}>Resave Entity</button>
+            </div>
 
 
-          <div style={{ marginTop: '1rem' }}>
-            {savedEntities.map((entity, index) => (
-              <div
-                className='saved-entity'
-                key={`${entity.table_name}-${index}`}
-                onClick={() => showSavedEntity(index)}
-              >
-                <div style={{marginRight: '1rem'}}>{entity.table_name}</div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteSavedEntity(entity.table_name)
-                  }}
+            <div className='saved__entities'>
+              {savedEntities.map((entity, index) => (
+                <div
+                  className='saved__item'
+                  key={`${entity.table_name}-${index}`}
+                  onClick={() => showSavedEntity(index)}
                 >
-                  Delete
-                </button>
-              </div>
-            ))}
+                  <div style={{ marginRight: '1rem' }}>{entity.table_name}</div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSavedEntity(entity.table_name)
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
-            <Monaco
-              height="400px"  // Adjust height based on your needs
-              language="json"  // Set language to JSON for IntelliSense
-              value={loadedEntities}  // The JSON data to edit
-              onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
-              options={{
-                minimap: { enabled: false },  // Disable minimap
-                automaticLayout: true,  // Auto adjust layout
-              }}
-            />
-          </div>
-
-          <button onClick={() => handleSaveEntities(loadedEntities)} style={{ marginBottom: '1rem' }}>Resave Entity</button>
         </>
       )}
     </div>
