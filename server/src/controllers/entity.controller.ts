@@ -15,13 +15,42 @@ const ensureDirectoryExists = async (dir: string) => {
     }
 };
 
+// Function to merge columns without overwriting known data types
+const mergeColumns = (existingColumns: any[], incomingColumns: any[]) => {
+    const mergedColumns = [...existingColumns];
+
+    for (const incomingCol of incomingColumns) {
+        const existingColIndex = existingColumns.findIndex(
+            (col) => col.column_name.toLowerCase() === incomingCol.column_name.toLowerCase()
+        );
+
+        if (existingColIndex !== -1) {
+            const existingCol = existingColumns[existingColIndex];
+            // If the existing column has a known data type, preserve it
+            if (existingCol.data_type !== 'unknown') {
+                continue;
+            } else {
+                // Replace 'unknown' data type with the incoming one if available
+                mergedColumns[existingColIndex] = incomingCol;
+            }
+        } else {
+            // Add new columns
+            mergedColumns.push(incomingCol);
+        }
+    }
+
+    return mergedColumns;
+};
+
 // Function to merge relationships without duplicates
 const mergeRelationships = (existing: any[], incoming: any[]) => {
     const mergedRelationships = [...existing];
 
     for (const incomingRel of incoming) {
         const exists = existing.some(
-            (rel) => rel.related_table === incomingRel.related_table && rel.relationship_type === incomingRel.relationship_type
+            (rel) =>
+                rel.related_table.toLowerCase() === incomingRel.related_table.toLowerCase() &&
+                rel.relationship_type === incomingRel.relationship_type
         );
         if (!exists) {
             mergedRelationships.push(incomingRel);
@@ -47,10 +76,11 @@ export const saveEntities = async (req: Request, res: Response): Promise<void> =
 
         // Process each table
         for (const table of tables) {
-            const tableName = table.table_name;
+            // Convert table_name to lowercase
+            const tableName = table.table_name.toLowerCase();
             const filePath = path.join(ENTITY_FILES_DIR, `${tableName}.json`);
 
-            let mergedTableData = table;
+            let mergedTableData = { ...table, table_name: tableName }; // Ensure table_name is in lowercase
 
             // Check if the file already exists
             try {
@@ -58,10 +88,13 @@ export const saveEntities = async (req: Request, res: Response): Promise<void> =
                 const parsedData = JSON.parse(existingData);
 
                 // Merge the new table data with the existing one
-                mergedTableData = merge({}, parsedData, table);
+                mergedTableData = merge({}, parsedData, mergedTableData);
+
+                // Handle columns specifically to avoid overwriting known data types
+                mergedTableData.columns = mergeColumns(parsedData.columns || [], mergedTableData.columns || []);
 
                 // Handle relationships specifically to avoid duplicates
-                mergedTableData.relationships = mergeRelationships(parsedData.relationships || [], table.relationships || []);
+                mergedTableData.relationships = mergeRelationships(parsedData.relationships || [], mergedTableData.relationships || []);
             } catch (err) {
                 // @ts-ignore
                 if (err.code !== 'ENOENT') {
