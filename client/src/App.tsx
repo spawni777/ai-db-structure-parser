@@ -18,7 +18,8 @@ const App = () => {
   const [savedEntities, setSavedEntities] = useState<Entity[]>([]);
   
   const [userInput, setUserInput] = useState('');
-  const [entities, setEntities] = useState('');
+  const [parsedEntities, setParsedEntities] = useState('');
+  const [loadedEntities, setLoadedEntities] = useState('');
   const [gptLoading, setGptLoading] = useState(false);
 
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -45,7 +46,7 @@ const App = () => {
       const response = await axios.post(`${apiUrl}/gpt/parse-entity`, {
         prompt: userInput,
       });
-      setEntities(JSON.stringify(response.data, null, 2));  // Format JSON response
+      setParsedEntities(JSON.stringify(response.data, null, 2));  // Format JSON response
     } catch (error) {
       console.error('Error calling GPT API:', error);
     } finally {
@@ -53,11 +54,11 @@ const App = () => {
     }
   };
 
-  const handleSaveEntities = async () => {
+  const handleSaveEntities = async (jsonEntities: string) => {
     try {
-      const parsedStructure = JSON.parse(entities);  // Parse the JSON before sending
-      await axios.post(`${apiUrl}/entities/`, parsedStructure);
-      alert('Response saved successfully!');
+      const parsedStructures = JSON.parse(jsonEntities);
+      await axios.post(`${apiUrl}/entities/`, parsedStructures);
+      alert('Entities saved successfully!');
 
       getSavedEntities();
     } catch (error) {
@@ -67,7 +68,7 @@ const App = () => {
   };
 
   const showSavedEntity = (index: number) => {
-    setEntities(JSON.stringify({
+    setLoadedEntities(JSON.stringify({
       tables: [savedEntities[index]],
     }, null, 2))
   }
@@ -108,13 +109,13 @@ const App = () => {
       </button>
 
       <div style={{ marginBottom: '1rem' }}>
-        <label>Entity</label>
+        <label>Parsed Entities</label>
         <div style={{ marginTop: '0.5rem' }}>
           <Monaco
             height="400px"  // Adjust height based on your needs
             language="json"  // Set language to JSON for IntelliSense
-            value={entities}  // The JSON data to edit
-            onChange={(newValue) => setEntities(newValue || '')}  // Update state on change
+            value={parsedEntities}  // The JSON data to edit
+            onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
             options={{
               minimap: { enabled: false },  // Disable minimap
               automaticLayout: true,  // Auto adjust layout
@@ -123,12 +124,16 @@ const App = () => {
         </div>
       </div>
 
-      <button onClick={handleSaveEntities} style={{ marginBottom: '1rem' }}>Save Entities</button>
+      <button onClick={() => handleSaveEntities(parsedEntities)} style={{ marginBottom: '1rem' }}>Save Entities</button>
+
       {!!savedEntities.length && (
         <>
           <hr />
           <h2>Saved Entities</h2>
-          <div>
+
+
+
+          <div style={{ marginTop: '1rem' }}>
             {savedEntities.map((entity, index) => (
               <div
                 className='saved-entity'
@@ -136,10 +141,32 @@ const App = () => {
                 onClick={() => showSavedEntity(index)}
               >
                 <div style={{marginRight: '1rem'}}>{entity.table_name}</div>
-                <button onClick={() => deleteSavedEntity(entity.table_name)}>Delete</button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteSavedEntity(entity.table_name)
+                  }}
+                >
+                  Delete
+                </button>
               </div>
             ))}
           </div>
+
+          <div style={{ marginTop: '0.5rem', marginBottom: '1rem' }}>
+            <Monaco
+              height="400px"  // Adjust height based on your needs
+              language="json"  // Set language to JSON for IntelliSense
+              value={loadedEntities}  // The JSON data to edit
+              onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
+              options={{
+                minimap: { enabled: false },  // Disable minimap
+                automaticLayout: true,  // Auto adjust layout
+              }}
+            />
+          </div>
+
+          <button onClick={() => handleSaveEntities(loadedEntities)} style={{ marginBottom: '1rem' }}>Resave Entity</button>
         </>
       )}
     </div>
