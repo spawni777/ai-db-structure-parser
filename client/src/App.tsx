@@ -1,24 +1,15 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Monaco from '@monaco-editor/react';
+import { DbEntity } from './types/dbSchema';
+import JsonSchemaVisualizer from './components/JsonSchemaVisualizer';
 
-type Entity = {
-  table_name: string;
-  columns: {
-    column_name: string;
-    data_type: string;
-  },
-  relationships: {
-    related_table: string;
-    relationship_type: string;
-  }
-}
 
 const App = () => {
-  const [savedEntities, setSavedEntities] = useState<Entity[]>([]);
+  const [savedEntities, setSavedEntities] = useState<DbEntity[]>([]);
   const [userInput, setUserInput] = useState('');
   const [parsedEntities, setParsedEntities] = useState('');
-  const [parsedEntitiesData, setParsedEntitiesData] = useState<Entity[]>([]);
+  const [parsedEntitiesData, setParsedEntitiesData] = useState<DbEntity[]>([]);
   const [loadedEntities, setLoadedEntities] = useState('');
   const [gptLoading, setGptLoading] = useState(false);
 
@@ -84,7 +75,7 @@ const App = () => {
 
   const deleteSavedEntity = async (entityTableName: string) => {
     await axios.delete(`${apiUrl}/entities/${entityTableName}`);
-    alert(`Entity "${entityTableName}" was deleted successfully!`);
+    alert(`DbEntity "${entityTableName}" was deleted successfully!`);
 
     getSavedEntities();
   }
@@ -172,7 +163,7 @@ const App = () => {
                 }}
               />
 
-              <button onClick={() => handleSaveEntities(loadedEntities)} style={{ marginBottom: '1rem', marginTop: '1rem' }}>Resave Entity</button>
+              <button onClick={() => handleSaveEntities(loadedEntities)} style={{ marginBottom: '1rem', marginTop: '1rem' }}>Resave DbEntity</button>
             </div>
 
 
@@ -196,6 +187,13 @@ const App = () => {
               ))}
             </div>
           </div>
+
+          <h2>Saved Entities Visualizer</h2>
+          <JsonSchemaVisualizer
+            schema={{
+              tables: savedEntities
+            }}
+          />
         </>
       )}
     </div>

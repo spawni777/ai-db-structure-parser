@@ -126,3 +126,17 @@ button:focus-visible {
 .parsed__item div:hover {
   opacity: 0.5;
 }
+
+/* visualization */
+.react-flow__edge:hover .edge-label {
+  display: block; /* Show label on hover */
+}
+
+.edge-label {
+  display: none;
+  background-color: #ffffff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
