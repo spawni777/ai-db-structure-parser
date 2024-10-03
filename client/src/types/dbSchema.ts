@@ -10,6 +10,7 @@ export type DbColumn = {
 
 export type DbEntity = {
   table_name: string;
+  gpt_suggested_name: string;
   columns: DbColumn[],
   relationships: DbRelashionship[]
 }

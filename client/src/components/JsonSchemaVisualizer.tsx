@@ -4,14 +4,13 @@ import '@xyflow/react/dist/style.css';
 import { DbColumn, DbEntity, DbSchema } from '../types/dbSchema';
 import dagre from 'dagre';
 import TableNode from './TableNode';
-import TableEdge from './TableEdge';
 
 type Props = {
   schema: DbSchema;
 };
 
 const nodeWidth = 400;
-const baseNodeHeight = 100; // Base height for a node without columns
+const baseNodeHeight = 140; // Base height for a node without columns
 const columnHeight = 20; // Additional height per column
 
 // Calculate node height based on the number of columns
@@ -99,7 +98,8 @@ const JsonSchemaVisualizer = ({ schema }: Props) => {
         data: {
           label: tableLabel, // Label to show the table name
           columns: table.columns,
-          isLinkedTable
+          isLinkedTable,
+          gptSuggestedName: table.gpt_suggested_name,
         },
         position: { x: 0, y: 0 }, // Position will be updated by dagre
         style: { width: nodeWidth, height: nodeHeight }, // Set dynamic height here

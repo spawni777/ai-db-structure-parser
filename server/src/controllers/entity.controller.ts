@@ -64,7 +64,6 @@ const mergeRelationships = (existing: any[], incoming: any[]) => {
 export const saveEntities = async (req: Request, res: Response): Promise<void> => {
     const { tables } = req.body;
 
-    console.log(tables);
     if (!tables || !Array.isArray(tables)) {
         res.status(400).json({ error: 'Tables data is required and should be an array.' });
         return;
