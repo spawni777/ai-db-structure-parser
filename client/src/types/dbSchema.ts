@@ -1,6 +1,7 @@
 export type DbRelashionship = {
   related_table: string;
   relationship_type: string;
+  related_table_column: string | null;
 }
 
 export type DbColumn = {

@@ -20,6 +20,7 @@ Response format:
             "relationships": [
                 {
                     "related_table": "related_table_name",
+                    "related_table_column": "related_table_id" // can be null
                     "relationship_type": "Relationship type (e.g., one-to-many, many-to-many)"
                 },
                 ...

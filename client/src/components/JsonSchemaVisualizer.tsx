@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ReactFlow, Node, Edge, NodeTypes} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { DbColumn, DbEntity, DbSchema } from '../types/dbSchema';
+import { DbColumn, DbSchema } from '../types/dbSchema';
 import dagre from 'dagre';
 import TableNode from './TableNode';
 
@@ -10,7 +10,7 @@ type Props = {
 };
 
 const nodeWidth = 400;
-const baseNodeHeight = 140; // Base height for a node without columns
+const baseNodeHeight = 200; // Base height for a node without columns
 const columnHeight = 20; // Additional height per column
 
 // Calculate node height based on the number of columns
@@ -65,17 +65,15 @@ const JsonSchemaVisualizer = ({ schema }: Props) => {
   useEffect(() => {
     const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
-
+  
     schema.tables.forEach((table) => {
       const nodeHeight = calculateNodeHeight(table.columns);
-
-      // Check if all columns in the table are foreign keys
-      // Add all related tables from the current table relationship
+  
+      // Check if the table acts as a linked table (as you already did)
       const relatedTables = table.relationships
         .map(relationship => schema.tables.find(_table => _table.table_name === relationship.related_table))
         .filter(_table => _table !== undefined);
-
-      // Add all related tables from the other tables
+  
       schema.tables.forEach(_table => {
         _table.relationships.forEach(relationship => {
           if (relationship.related_table === table.table_name) {
@@ -83,7 +81,7 @@ const JsonSchemaVisualizer = ({ schema }: Props) => {
           }
         })
       })
-
+  
       const isLinkedTable = table.columns.every((column) => 
         relatedTables
           .some(_table => _table.columns.findIndex(_column => _column.column_name === column.column_name) !== -1)
@@ -104,21 +102,20 @@ const JsonSchemaVisualizer = ({ schema }: Props) => {
         position: { x: 0, y: 0 }, // Position will be updated by dagre
         style: { width: nodeWidth, height: nodeHeight }, // Set dynamic height here
       });
-
+  
       // Create edges for the relationships
       table.relationships.forEach((relationship) => {
         newEdges.push({
           id: `${table.table_name}-${relationship.related_table}`,
-          // type: 'smoothstep',
           source: table.table_name,
           target: relationship.related_table,
           data: {
-            startLabel: relationship.relationship_type
+            startLabel: relationship.relationship_type,
           },
         });
       });
     });
-
+  
     // Apply dagre layout to nodes and edges
     const layoutedElements = getLayoutedElements(newNodes, newEdges);
     setNodes(layoutedElements.nodes);
