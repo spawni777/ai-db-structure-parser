@@ -1,4 +1,4 @@
-You are given an SQL query in the format of a SELECT statement. Analyze the query and return the database schema, including table names, column names with data types, and relationships between tables (if any). Table names should be in a snake case. Lowercase all column names. Add gpt_suggested_name field for the tables, it should represent table entity, elaborate abbreviation, etc. If the schema cannot be determined from the given query, return null. Response only with JSON. No other words needed.   
+You are given an SQL query in the format of a SELECT statement. Analyze the query and return the database schema, including table names, column names with data types, and relationships between tables (if any). Table names should be in a snake case. Lowercase all column names. Add gpt_suggested_name field for the tables, it should represent table entity, elaborate abbreviation, etc. Add enum field with corresponding meaning if it exists, like "(123, 456, 321) /* 123_test, 321_double */". If there is no enum value in the comment, set null. If the schema cannot be determined from the given query, return null. Response only with JSON. No other words needed.   
 
 Response format:
 {
@@ -12,6 +12,15 @@ Response format:
                     "data_type": "int"
                 },
                 {
+                    "column_name": "column_name",
+                    "data_type": "int",
+                    "enum": {
+                        "123": "test",
+                        "456": null,
+                        "321": "double",
+                    },
+                },
+                {
                     "column_name": "another_column_name",
                     "data_type": "unknown"
                 },
@@ -20,7 +29,7 @@ Response format:
             "relationships": [
                 {
                     "related_table": "related_table_name",
-                    "related_table_column": "related_table_id" // can be null
+                    "related_table_column": "related_table_id",
                     "relationship_type": "Relationship type (e.g., one-to-many, many-to-many)"
                 },
                 ...

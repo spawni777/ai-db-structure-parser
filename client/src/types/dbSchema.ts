@@ -7,6 +7,7 @@ export type DbRelashionship = {
 export type DbColumn = {
   column_name: string;
   data_type: string;
+  enum?: Record<string, string>;
 }
 
 export type DbEntity = {

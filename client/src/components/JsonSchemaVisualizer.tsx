@@ -15,7 +15,13 @@ const columnHeight = 20; // Additional height per column
 
 // Calculate node height based on the number of columns
 const calculateNodeHeight = (columns: DbColumn[]) => {
-  return baseNodeHeight + columns.length * columnHeight;
+  let height = baseNodeHeight + columns.length * columnHeight;
+
+  columns.forEach(column => {
+    height += (column.enum ? Object.keys(column.enum).length * columnHeight : 0);
+  });
+
+  return height;
 };
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
