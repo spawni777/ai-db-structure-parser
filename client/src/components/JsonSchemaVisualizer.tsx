@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ReactFlow, Node, Edge, NodeTypes} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { DbColumn, DbSchema } from '../types/dbSchema';
+import { DbColumn, DbEntity, DbSchema } from '../types/dbSchema';
 import dagre from 'dagre';
 import TableNode from './TableNode';
 import TableEdge from './TableEdge';
@@ -70,13 +70,36 @@ const JsonSchemaVisualizer = ({ schema }: Props) => {
     schema.tables.forEach((table) => {
       const nodeHeight = calculateNodeHeight(table.columns);
 
+      // Check if all columns in the table are foreign keys
+      // Add all related tables from the current table relationship
+      const relatedTables = table.relationships
+        .map(relationship => schema.tables.find(_table => _table.table_name === relationship.related_table))
+        .filter(_table => _table !== undefined);
+
+      // Add all related tables from the other tables
+      schema.tables.forEach(_table => {
+        _table.relationships.forEach(relationship => {
+          if (relationship.related_table === table.table_name) {
+            relatedTables.push(_table);
+          }
+        })
+      })
+
+      const isLinkedTable = table.columns.every((column) => 
+        relatedTables
+          .some(_table => _table.columns.findIndex(_column => _column.column_name === column.column_name) !== -1)
+      );
+  
+      const tableLabel = isLinkedTable ? `[Linked Table] ${table.table_name}` : table.table_name;
+  
       // Create a node for each table
       newNodes.push({
         id: table.table_name, // Unique id for each node
         type: 'tableNode',
         data: {
-          label: table.table_name, // Label to show the table name
+          label: tableLabel, // Label to show the table name
           columns: table.columns,
+          isLinkedTable
         },
         position: { x: 0, y: 0 }, // Position will be updated by dagre
         style: { width: nodeWidth, height: nodeHeight }, // Set dynamic height here

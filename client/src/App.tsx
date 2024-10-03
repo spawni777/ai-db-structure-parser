@@ -156,7 +156,7 @@ const App = () => {
                 height="400px"  // Adjust height based on your needs
                 language="json"  // Set language to JSON for IntelliSense
                 value={loadedEntities}  // The JSON data to edit
-                onChange={(newValue) => setParsedEntities(newValue || '')}  // Update state on change
+                onChange={(newValue) => setLoadedEntities(newValue || '')}  // Update state on change
                 options={{
                   minimap: { enabled: false },  // Disable minimap
                   automaticLayout: true,  // Auto adjust layout
